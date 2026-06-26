@@ -1,0 +1,26 @@
+enum ApiRoutes {
+  login('users/login'),
+  register('users/register'),
+  logout('users/logout'),
+  updateUser('users/{user}');
+
+  final String path;
+  const ApiRoutes(this.path);
+
+  /// Remplace les valeurs dynamiques dans l'URL
+  String format(Map<String, dynamic> params) {
+    String formattedPath = path;
+    params.forEach((key, value) {
+      formattedPath = formattedPath.replaceAll(
+        '{$key}',
+        value != null ? Uri.encodeComponent(value.toString()) : '',
+      );
+    });
+    formattedPath = formattedPath
+        .replaceAll(RegExp(r'[?&][^=]+=$'), '')
+        .replaceAll(RegExp(r'\?&'), '?')
+        .replaceAll(RegExp(r'\?$'), '');
+
+    return formattedPath;
+  }
+}
