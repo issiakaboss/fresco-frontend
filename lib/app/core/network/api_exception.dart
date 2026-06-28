@@ -21,11 +21,6 @@ class ApiNotRespondingException extends ApiException {
       : super(message, 'ApiNotRespondingException', url);
 }
 
-class InsufficientBalanceException extends ApiException {
-  InsufficientBalanceException([String? message])
-      : super(message, 'InsufficientBalanceException', null);
-}
-
 class ServiceUnavailableException extends ApiException {
   ServiceUnavailableException([String? message])
       : super(message, 'ServiceUnavailableException', null, 503);

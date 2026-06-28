@@ -5,7 +5,7 @@ import 'package:laravel_echo_null/laravel_echo_null.dart';
 
 class EchoService {
   static Future<Echo<pusher.PusherClient, PusherChannel>> initEcho() async {
-    String? token =  await Token.getToken();
+    String? token =  Token.getToken();
     return Echo.pusher(
       Env.appKey,
       authEndPoint: '${Env.apiUrl}broadcasting/auth',

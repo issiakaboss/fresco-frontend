@@ -1,10 +1,12 @@
 // ignore_for_file: deprecated_member_use
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fresco_shop/app/core/websocket/echo_service.dart';
-import 'package:fresco_shop/app/cummon/controllers/user_controller.dart';
+import 'package:fresco_shop/app/common/controllers/user_controller.dart';
+import 'package:fresco_shop/app/data/models/order_request.dart';
 import 'package:fresco_shop/app/data/models/user.dart';
 import 'package:fresco_shop/app/data/providers/auth_provider.dart';
+import 'package:fresco_shop/app/modules/cuisine/controllers/cuisine_controller.dart';
+import 'package:fresco_shop/app/modules/distribution/controllers/distribution_controller.dart';
 import 'package:get/get.dart';
 import 'package:laravel_echo_null/laravel_echo_null.dart';
 import 'package:pusher_client_socket/pusher_client_socket.dart' as pusher;
@@ -19,10 +21,6 @@ class SocketController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-
-    if (currentUser != null) {
-      connectToSocket(user: currentUser!);
-    }
   }
 
   @override
@@ -30,9 +28,9 @@ class SocketController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     if (state == AppLifecycleState.resumed) {
-      debugPrint("📱 [Tiim] Premier plan : Reconnexion instantanée");
-      if (currentUser != null) {
-        connectToSocket(user: currentUser!);
+      debugPrint("📱 Premier plan : Reconnexion instantanée du Socket");
+      if (Get.isRegistered<UserController>() && UserController.to.isLoggedIn) {
+        connectToSocket(user: UserController.to.user!);
       }
     }
   }
@@ -55,12 +53,41 @@ class SocketController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void _logoutUser() async {
-    await UserController.to.performLogOut();
-  }
 
+void listenToOrderUpdates(String channelName) {
+  ecouter(
+    channel: channelName,
+    event: 'order.status',
+    action: (data) {
+      if (data != null && data['order'] != null) {
+        debugPrint("📣 Flux Temps Réel reçu: Commande mise à jour !");
+        final orderMap = Map<String, dynamic>.from(data['order']);
+        final OrderRequest order = OrderRequest.fromJson(orderMap);
+        final String status = order.status;
 
+        // --- SECTION CUISINE ---
+        if (Get.isRegistered<CuisineController>()) {
+          final cuisineCtrl = Get.find<CuisineController>();
+          if (status == 'en_attente' || status == 'preparation') {
+            cuisineCtrl.addOrUpdateOrder(order); 
+          } else if (status == 'preparer' || status == 'livrer') {
+            cuisineCtrl.removeOrderFromScreen(order.id!);
+          }
+        }
 
+        // --- SECTION DISTRIBUTION ---
+        if (Get.isRegistered<DistributionController>()) {
+          final distroCtrl = Get.find<DistributionController>();
+          if (status == 'preparer') {
+            // À implémenter pour le comptoir de distribution
+          } else if (status == 'livrer' || status == 'en_attente') {
+            // À implémenter
+          }
+        }
+      }
+    },
+  );
+}
   // --- CONNECT ET SYSTEME D'ÉCOUTE AMÉLIORÉ ---
 
   Future<void> connectToSocket({required User user}) async {
@@ -92,8 +119,11 @@ class SocketController extends GetxController with WidgetsBindingObserver {
     if (user.id != null) {
       if (echo != null && _activeChannels.isNotEmpty) {
         debugPrint(
-            "🔄 [Tiim] Nettoyage des anciens canaux Pusher avant réinscription...");
-        for (String channelName in _activeChannels) {
+          "🔄 Nettoyage des anciens canaux Pusher avant réinscription...",
+        );
+        for (String subscriptionKey in _activeChannels) {
+          // On extrait le nom du canal (ce qui est avant le @)
+          String channelName = subscriptionKey.split('@').first;
           try {
             echo!.leave(channelName);
           } catch (e) {
@@ -102,17 +132,15 @@ class SocketController extends GetxController with WidgetsBindingObserver {
         }
         _activeChannels.clear();
       }
-     
-
-      // 2. Canaux selon les rôles spécifiques de Tiim
-      if (user.isAdmin) {
-     
-      } else {
-        if (user.isCaisse) {
-   
-        }
+      const String ordersChannel = 'private-garba-orders';
+      if (user.role == 'cuisine' ||
+          user.role == 'distribution' ||
+          user.role == 'admin') {
+        listenToOrderUpdates(ordersChannel);
       }
-  
+      if (user.role == 'caisse') {
+        print("caisse data");
+      }
     }
   }
 
@@ -127,7 +155,8 @@ class SocketController extends GetxController with WidgetsBindingObserver {
     String subscriptionKey = "$channel@$event";
     if (_activeChannels.contains(subscriptionKey)) {
       debugPrint(
-          "⚠️ Déjà inscrit à l'écoute de : $subscriptionKey (Ignoré pour éviter les doublons)");
+        "⚠️ Déjà inscrit à l'écoute de : $subscriptionKey (Ignoré pour éviter les doublons)",
+      );
       return;
     }
 
