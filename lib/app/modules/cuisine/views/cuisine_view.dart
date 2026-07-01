@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:fresco_shop/app/modules/cuisine/views/kds_ticket_card.dart';
 import 'package:fresco_shop/app/modules/cuisine/views/kds_ticket_card_compact.dart';
+import 'package:fresco_shop/app/routes/app_pages.dart';
 import 'package:fresco_shop/app/utils/helpers/dialog_helper.dart';
 import 'package:get/get.dart';
 import '../controllers/cuisine_controller.dart';
@@ -65,121 +66,183 @@ class CuisineView extends GetView<CuisineController> {
             ),
           ),
           actions: [
-            // // Compteur de tickets en cours d'un coup d'œil
-            // Obx(() {
-            //   final count = controller.ordersEnAttente.length;
-            //   return Container(
-            //     margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
-            //     padding: const EdgeInsets.symmetric(horizontal: 16),
-            //     decoration: BoxDecoration(
-            //       color: count > 5
-            //           ? Colors.redAccent.withOpacity(0.2)
-            //           : Colors.white.withOpacity(0.05),
-            //       borderRadius: BorderRadius.circular(12),
-            //       border: Border.all(
-            //         color: count > 5 ? Colors.redAccent : Colors.white10,
-            //         width: 1.5,
-            //       ),
-            //     ),
-            //     child: Center(
-            //       child: Row(
-            //         children: [
-            //           Container(
-            //             width: 8,
-            //             height: 8,
-            //             decoration: BoxDecoration(
-            //               color: count > 5
-            //                   ? Colors.redAccent
-            //                   : Colors.greenAccent,
-            //               shape: BoxShape.circle,
-            //             ),
-            //           ),
-            //           const SizedBox(width: 8),
-            //           Text(
-            //             "$count COMDS",
-            //             style: TextStyle(
-            //               fontWeight: FontWeight.bold,
-            //               fontSize: 13,
-            //               color: count > 5 ? Colors.redAccent : Colors.white,
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   );
-            // }),
             Obx(() {
-              final bool active = controller.isListening.value;
-              final bool isHearing = controller.isNativeListening.value;
-
-              return InkWell(
-                onTap: () => controller.toggleVoiceControl(),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: active
-                        ? (isHearing
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.amber.withOpacity(0.2))
-                        : Colors.white10,
-                    borderRadius: BorderRadius.circular(20),
-                    border: BoxBorder.all(
-                      color: active
-                          ? (isHearing ? Colors.green : Colors.amber)
-                          : Colors.transparent,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        active
-                            ? (isHearing ? Icons.mic : Icons.mic_none)
-                            : Icons.mic_off,
-                        color: active
-                            ? (isHearing ? Colors.green : Colors.amber)
-                            : Colors.white30,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        active
-                            ? (isHearing ? "À l'écoute..." : "En attente...")
-                            : "Vocal Off",
-                        style: TextStyle(
-                          color: active ? Colors.white : Colors.white30,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (active && isHearing) ...[
-                        const SizedBox(width: 6),
-                        // Un tout petit indicateur visuel qui pulse
-                        const SizedBox(
-                          width: 8,
-                          height: 8,
+              return controller.isLoading.value
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            color: Colors.green,
+                            color: Colors.white70,
+                            strokeWidth: 2,
                           ),
                         ),
-                      ],
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () => controller.fetchCuisineOrders(),
+                      child: const Icon(
+                        Icons.refresh_rounded,
+                        color: Colors.white70,
+                      ),
+                    );
+            }),
+            SizedBox(width: 8.0),
+            Obx(() {
+              final count =
+                  controller.ordersEnAttente.length +
+                  controller.ordersEnCours.length;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: count > 5
+                      ? Colors.redAccent.withOpacity(0.2)
+                      : Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: count > 5 ? Colors.redAccent : Colors.white10,
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: count > 5
+                              ? Colors.redAccent
+                              : Colors.greenAccent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "$count COMDS",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: count > 5 ? Colors.redAccent : Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               );
             }),
-            IconButton(
-              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-              tooltip: 'Déconnexion',
-              onPressed: () => DialogHelper.showLogoutConfirmation(context),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              // Style moderne pour le conteneur du menu
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              color: Color(0xFF12141C),
+              elevation: 4,
+              offset: const Offset(
+                0,
+                40,
+              ), // Positionne le menu légèrement plus bas que l'icône
+              onSelected: (value) {
+                switch (value) {
+                  case 'history':
+                    Get.toNamed(Routes.CUISIN_HISTORY);
+                    break;
+                  case 'auto_next':
+                    controller.toggleAutoNext();
+                    break;
+                  case 'logout':
+                    DialogHelper.showLogoutConfirmation(context);
+                    break;
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'history',
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.history_toggle_off_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'Historique des préparations',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'auto_next',
+                  child: Obx(() {
+                    final bool isAuto = controller.isAutoNextEnabled.value;
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isAuto ? Icons.bolt : Icons.front_hand,
+                            color: isAuto ? Colors.blueAccent : Colors.white54,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isAuto ? "Auto-Next : ACTIF" : "Auto-Next : OFF",
+                            style: TextStyle(
+                              color: isAuto ? Colors.white : Colors.white54,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+
+                const PopupMenuDivider(
+                  height: 1,
+                ), // Ligne de séparation élégante
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.logout_rounded,
+                          color: Colors
+                              .redAccent, // Distingue visuellement l'action destructive
+                          size: 22,
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          'Déconnexion',
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
           ],
         ),
         body: Obx(() {
@@ -212,14 +275,39 @@ class CuisineView extends GetView<CuisineController> {
                                   _buildZoneHeader("COMMANDE EN COURS"),
                                   const SizedBox(height: 12),
                                   Expanded(
-                                    child: KdsTicketCard(
-                                      order: controller.ordersEnCours.first,
-                                      isFocused: false,
-                                      onAction: () =>
-                                          controller.finishPreparation(
-                                            controller.ordersEnCours.first.id!,
+                                    child: Obx(() {
+                                      if (controller
+                                          .isfinishPrepLoading
+                                          .value) {
+                                        return const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 12.0,
                                           ),
-                                    ),
+                                          child: Center(
+                                            child: SizedBox(
+                                              width: 40,
+                                              height: 40,
+                                              child: CircularProgressIndicator(
+                                                color: Colors.white70,
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      return KdsTicketCard(
+                                        order: controller.ordersEnCours.first,
+                                        isFocused: false,
+                                        onAction: () =>
+                                            controller.finishPreparation(
+                                              controller
+                                                  .ordersEnCours
+                                                  .first
+                                                  .id!,
+                                            ),
+                                      );
+                                    }),
                                   ),
                                 ],
                               ),
@@ -301,14 +389,34 @@ class CuisineView extends GetView<CuisineController> {
                                 ),
                                 const SizedBox(height: 16),
                                 Expanded(
-                                  child: KdsTicketCard(
-                                    order: controller.ordersEnCours.first,
-                                    isFocused: true,
-                                    onAction: () =>
-                                        controller.finishPreparation(
-                                          controller.ordersEnCours.first.id!,
+                                  child: Obx(() {
+                                    if (controller.isfinishPrepLoading.value) {
+                                      return const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12.0,
                                         ),
-                                  ),
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 40,
+                                            height: 40,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white70,
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    return KdsTicketCard(
+                                      order: controller.ordersEnCours.first,
+                                      isFocused: true,
+                                      onAction: () =>
+                                          controller.finishPreparation(
+                                            controller.ordersEnCours.first.id!,
+                                          ),
+                                    );
+                                  }),
                                 ),
                               ],
                             ),
@@ -404,6 +512,7 @@ class CuisineView extends GetView<CuisineController> {
             fontSize: 13,
           ),
         ),
+
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(

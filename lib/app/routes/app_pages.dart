@@ -2,10 +2,14 @@ import 'package:get/get.dart';
 
 import '../modules/caisse/bindings/caisse_binding.dart';
 import '../modules/caisse/views/caisse_view.dart';
+import '../modules/cuisinHistory/bindings/cuisin_history_binding.dart';
+import '../modules/cuisinHistory/views/cuisin_history_view.dart';
 import '../modules/cuisine/bindings/cuisine_binding.dart';
 import '../modules/cuisine/views/cuisine_view.dart';
 import '../modules/distribution/bindings/distribution_binding.dart';
 import '../modules/distribution/views/distribution_view.dart';
+import '../modules/distribution_history/bindings/distribution_history_binding.dart';
+import '../modules/distribution_history/views/distribution_history_view.dart';
 import '../modules/history/bindings/history_binding.dart';
 import '../modules/history/views/history_view.dart';
 import '../modules/home/bindings/home_binding.dart';
@@ -47,9 +51,19 @@ class AppPages {
       binding: DistributionBinding(),
     ),
     GetPage(
+      name: _Paths.DISTRIBUTION_HISTORY,
+      page: () => const DistributionHistoryView(),
+      binding: DistributionHistoryBinding(),
+    ),
+    GetPage(
       name: _Paths.HISTORY,
       page: () => const HistoryView(),
       binding: HistoryBinding(),
+    ),
+    GetPage(
+      name: _Paths.CUISIN_HISTORY,
+      page: () => const CuisinHistoryView(),
+      binding: CuisinHistoryBinding(),
     ),
   ];
 }

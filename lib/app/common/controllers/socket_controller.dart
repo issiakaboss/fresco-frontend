@@ -53,52 +53,51 @@ class SocketController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  void listenToOrderUpdates(String channelName) {
+    ecouter(
+      channel: channelName,
+      event: 'order.status',
+      action: (data) {
+        if (data != null && data['order'] != null) {
+          debugPrint("📣 Flux Temps Réel reçu: Commande mise à jour !");
+          final orderMap = Map<String, dynamic>.from(data['order']);
+          final OrderRequest order = OrderRequest.fromJson(orderMap);
+          final String status = order.status;
 
-void listenToOrderUpdates(String channelName) {
-  ecouter(
-    channel: channelName,
-    event: 'order.status',
-    action: (data) {
-      if (data != null && data['order'] != null) {
-        debugPrint("📣 Flux Temps Réel reçu: Commande mise à jour !");
-        final orderMap = Map<String, dynamic>.from(data['order']);
-        final OrderRequest order = OrderRequest.fromJson(orderMap);
-        final String status = order.status;
+          // --- SECTION CUISINE ---
+          if (Get.isRegistered<CuisineController>()) {
+            final cuisineCtrl = Get.find<CuisineController>();
+            if (status == 'en_attente' || status == 'preparation') {
+              cuisineCtrl.addOrUpdateOrder(order);
+            } else if (status == 'preparer' || status == 'livrer') {
+              cuisineCtrl.removeOrderFromScreen(order.id!);
+            }
+          }
 
-        // --- SECTION CUISINE ---
-        if (Get.isRegistered<CuisineController>()) {
-          final cuisineCtrl = Get.find<CuisineController>();
-          if (status == 'en_attente' || status == 'preparation') {
-            cuisineCtrl.addOrUpdateOrder(order); 
-          } else if (status == 'preparer' || status == 'livrer') {
-            cuisineCtrl.removeOrderFromScreen(order.id!);
+          // --- SECTION DISTRIBUTION ---
+          if (Get.isRegistered<DistributionController>()) {
+            final distroCtrl = Get.find<DistributionController>();
+            if (status == 'preparer') {
+              distroCtrl.addOrUpdateOrder(order);
+            } else if (status == 'livrer' || status == 'en_attente') {
+              distroCtrl.removeOrderFromScreen(order.id!);
+            }
           }
         }
-
-        // --- SECTION DISTRIBUTION ---
-        if (Get.isRegistered<DistributionController>()) {
-          final distroCtrl = Get.find<DistributionController>();
-          if (status == 'preparer') {
-            // À implémenter pour le comptoir de distribution
-          } else if (status == 'livrer' || status == 'en_attente') {
-            // À implémenter
-          }
-        }
-      }
-    },
-  );
-}
+      },
+    );
+  }
   // --- CONNECT ET SYSTEME D'ÉCOUTE AMÉLIORÉ ---
 
   Future<void> connectToSocket({required User user}) async {
     if (echo != null) {
-      debugPrint("📡 Socket déjà initialisé pour Tiim.");
+      debugPrint("📡 Socket déjà initialisé pour Fresco.");
       // initialSocketSubscription(user: user);
       return;
     }
 
     try {
-      debugPrint("🔌 Connexion à l'instance Echo de Tiim...");
+      debugPrint("🔌 Connexion à l'instance Echo de Fresco...");
       echo = await EchoService.initEcho();
 
       echo!.connector.onConnect((data) {
@@ -107,7 +106,7 @@ void listenToOrderUpdates(String channelName) {
       });
 
       echo!.connector.onDisconnect((data) {
-        debugPrint("❌ Socket Déconnecté de Tiim");
+        debugPrint("❌ Socket Déconnecté de Fresco");
       });
     } catch (e) {
       debugPrint("Socket error: $e");

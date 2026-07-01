@@ -1,4 +1,4 @@
-package com.frescoShop.fresco_shop;
+package com.frescoshop.fresco_shop;
 
 import io.flutter.embedding.android.FlutterActivity;
 

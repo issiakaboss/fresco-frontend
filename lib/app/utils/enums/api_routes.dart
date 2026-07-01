@@ -4,7 +4,10 @@ enum ApiRoutes {
   logout('logout'),
   orders('orders'),
   cashierOrders('cashier/orders'),
-  updateOrder('orders/{order}'),       
+  distributionHistory('orders/distribution-history'),
+  forDistribution('orders/ready-for-distribution'),
+  distributeOrder('orders/{order}/distribute'),
+  updateOrder('orders/{order}'),
   cancelOrder('orders/{order}/cancel'),
   updateUser('users/{user}');
 

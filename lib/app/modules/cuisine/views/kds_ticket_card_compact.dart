@@ -89,30 +89,6 @@ class KdsTicketCardCompact extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // Indicateur de piment flash
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: order.pimentAPart
-                        ? Colors.redAccent.withOpacity(0.1)
-                        : Colors.greenAccent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    order.pimentAPart ? "🌶️ À PART" : "🌶️ MIX",
-                    style: TextStyle(
-                      color: order.pimentAPart
-                          ? Colors.redAccent
-                          : Colors.greenAccent,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

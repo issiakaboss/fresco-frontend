@@ -10,7 +10,9 @@ abstract class Routes {
   static const CAISSE = _Paths.CAISSE;
   static const CUISINE = _Paths.CUISINE;
   static const DISTRIBUTION = _Paths.DISTRIBUTION;
+  static const DISTRIBUTION_HISTORY = _Paths.DISTRIBUTION_HISTORY;
   static const HISTORY = _Paths.HISTORY;
+  static const CUISIN_HISTORY = _Paths.CUISIN_HISTORY;
 }
 
 abstract class _Paths {
@@ -20,5 +22,7 @@ abstract class _Paths {
   static const CAISSE = '/caisse';
   static const CUISINE = '/cuisine';
   static const DISTRIBUTION = '/distribution';
+  static const DISTRIBUTION_HISTORY = '/distribution-history';
   static const HISTORY = '/history';
+  static const CUISIN_HISTORY = '/cuisin-history';
 }

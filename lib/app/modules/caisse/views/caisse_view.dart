@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fresco_shop/app/core/services/printer_service.dart';
 import 'package:fresco_shop/app/modules/caisse/views/printer_setting_view.dart';
 import 'package:fresco_shop/app/routes/app_pages.dart';
+import 'package:fresco_shop/app/utils/constants/food_icons.dart';
 import 'package:fresco_shop/app/utils/helpers/dialog_helper.dart';
 import 'package:get/get.dart';
 import '../controllers/caisse_controller.dart';
@@ -216,8 +217,14 @@ class CaisseView extends GetView<CaisseController> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    _buildCustomPlatRowCard(
+                      'personnalise',
+                      'Sur Mesure 🎯',
+                      'Composition libre de l\'Attiéké et du poisson',
+                      order.basePlat,
+                    ),
                     const SizedBox(height: 28),
-
                     // --- SECTION 2 : SUPPLÉMENTS ---
                     _buildSectionHeader("2. Éléments Supplémentaires"),
                     const SizedBox(height: 12),
@@ -236,7 +243,7 @@ class CaisseView extends GetView<CaisseController> {
                         child: Column(
                           children: [
                             _buildCounterRow(
-                              icon: Icons.egg_rounded,
+                              icon: FoodIcons.oeuf,
                               title: "Œufs",
                               subtitle: "150 F",
                               count: order.extraOeufs,
@@ -246,7 +253,7 @@ class CaisseView extends GetView<CaisseController> {
                             ),
                             const Divider(height: 1),
                             _buildCounterRow(
-                              icon: Icons.local_drink_rounded,
+                              icon: FoodIcons.eau,
                               title: "Sachet d'eau",
                               subtitle: "25 F",
                               count: order.extraEau,
@@ -254,30 +261,45 @@ class CaisseView extends GetView<CaisseController> {
                               onIncrement: () => controller.updateEau(1),
                               color: Colors.blue,
                             ),
-                            // Dans la liste des enfants de ta Card :
-                            _buildAllocoRow(
+                            const Divider(height: 1),
+                            _buildPriceRow(
                               context: context,
+                              label: "Alloco",
+                              icon: FoodIcons.alloco,
+                              color: Colors.orange,
                               currentPrice: order.extraAllocoPrice,
                               onPriceChanged: (newPrice) =>
                                   controller.setAllocoPrice(newPrice),
                             ),
                             const Divider(height: 1),
-                            SwitchListTile(
-                              secondary: const Icon(
-                                Icons.local_fire_department_rounded,
-                                color: Colors.redAccent,
-                              ),
-                              title: const Text(
-                                "Piment mis à part",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
-                              ),
-                              inactiveTrackColor: Colors.white,
-                              activeColor: Colors.redAccent,
-                              value: order.pimentAPart,
-                              onChanged: (val) => controller.togglePiment(),
+                            _buildPriceRow(
+                              context: context,
+                              label: "Tomate",
+                              icon: FoodIcons.tomate,
+                              color: Colors.redAccent,
+                              currentPrice: order.extraTomatePrice,
+                              onPriceChanged: (newPrice) =>
+                                  controller.setTomatePrice(newPrice),
+                            ),
+                            const Divider(height: 1),
+                            _buildPriceRow(
+                              context: context,
+                              label: "Mayonnaise",
+                              icon: FoodIcons.mayonnaise,
+                              color: Colors.blueGrey,
+                              currentPrice: order.extraMayonnaisePrice,
+                              onPriceChanged: (newPrice) =>
+                                  controller.setMayonnaisePrice(newPrice),
+                            ),
+                            const Divider(height: 1),
+                            _buildPriceRow(
+                              context: context,
+                              label: "Bissap",
+                              icon: FoodIcons.bissap,
+                              color: const Color.fromARGB(255, 104, 9, 2),
+                              currentPrice: order.extraBissapPrice,
+                              onPriceChanged: (newPrice) =>
+                                  controller.setBissapPrice(newPrice),
                             ),
                           ],
                         ),
@@ -292,10 +314,21 @@ class CaisseView extends GetView<CaisseController> {
                       // On écoute orderRx pour forcer le rafraîchissement des puces graphiques
                       final _ = controller.orderRx.value.notes;
 
+                      // --- Configuration Notes Prédéfinies ---
+                      final List<String> _predefinedNotes = [
+                        "${FoodIcons.piment} Piment mis à part",
+                        "${FoodIcons.oignon} Sans oignon",
+                        "${FoodIcons.piment} Sans piment",
+                        "${FoodIcons.poisson} Pas tête Poisson",
+                        "${FoodIcons.piment} Pas d'huile",
+                        "${FoodIcons.poisson} Tête Poisson",
+                        "${FoodIcons.bissap} beaucoup d'huile",
+                      ];
+
                       return Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: controller.predefinedNotes.map((note) {
+                        children: _predefinedNotes.map((note) {
                           final isSelected = controller.isNoteSelected(note);
                           return FilterChip(
                             label: Text(note),
@@ -587,8 +620,90 @@ class CaisseView extends GetView<CaisseController> {
     );
   }
 
+  Widget _buildCustomPlatRowCard(
+    String type,
+    String title,
+    String subtitle,
+    String selectedType,
+  ) {
+    final isSelected = type == selectedType;
+
+    return InkWell(
+      onTap: () {
+        if (isSelected) {
+          controller
+              .showCustomizationBottomSheet(); // Rouvre le panneau si déjà sélectionné
+        } else {
+          controller.selectBasePlat(type);
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ), // Hauteur réduite et bien dosée
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.amber[800] : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? Colors.amber.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: isSelected ? Colors.amber.shade900 : Colors.grey.shade200,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Texte à gauche
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isSelected
+                          ? Colors.white.withOpacity(0.8)
+                          : Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Flèche ou indicateur à droite pour inviter à configurer
+            Icon(
+              Icons.tune_rounded,
+              color: isSelected ? Colors.white : Colors.amber[800],
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCounterRow({
-    required IconData icon,
+    required String icon,
     required String title,
     required String subtitle,
     required int count,
@@ -606,7 +721,7 @@ class CaisseView extends GetView<CaisseController> {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Text(icon, style: TextStyle(color: color, fontSize: 20)),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -661,14 +776,22 @@ class CaisseView extends GetView<CaisseController> {
     );
   }
 
-  Widget _buildAllocoRow({
+  Widget _buildPriceRow({
     required BuildContext context,
     required int currentPrice,
+    required String icon,
+    required Color color,
+    required String label,
     required Function(int) onPriceChanged,
   }) {
     return InkWell(
-      onTap: () =>
-          _showAllocoPriceDialog(context, currentPrice, onPriceChanged),
+      onTap: () => _showAllocoPriceBottomSheet(
+        context,
+        currentPrice,
+        label,
+        icon,
+        onPriceChanged,
+      ),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4),
@@ -677,22 +800,19 @@ class CaisseView extends GetView<CaisseController> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
-                Icons.lunch_dining_rounded,
-                color: Colors.orange,
-                size: 20,
-              ),
+              child: Text(icon, style: TextStyle(color: color, fontSize: 20)),
             ),
+
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Alloco",
+                  Text(
+                    label,
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
@@ -705,7 +825,7 @@ class CaisseView extends GetView<CaisseController> {
             ),
             // Affiche le prix actuel de l'alloco sous forme de badge cliquable
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
               decoration: BoxDecoration(
                 color: currentPrice > 0 ? Colors.orange[50] : Colors.grey[100],
                 borderRadius: BorderRadius.circular(20),
@@ -744,247 +864,275 @@ class CaisseView extends GetView<CaisseController> {
     );
   }
 
-  // Boîte de dialogue pour choisir ou saisir le montant de l'alloco
-  void _showAllocoPriceDialog(
+  // BottomSheet pour choisir ou saisir le montant de l'alloco (ou autres suppléments)
+  void _showAllocoPriceBottomSheet(
     BuildContext context,
     int currentPrice,
+    String label,
+    String icon,
     Function(int) onPriceChanged,
   ) {
     final textController = TextEditingController(
       text: currentPrice > 0 ? currentPrice.toString() : "",
     );
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 360),
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- EN-TÊTE DU DIALOG ---
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.lunch_dining_rounded,
-                      color: Colors.orange,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Text(
-                    "Montant Alloco",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
+      isScrollControlled:
+          true, // Permet au BottomSheet de monter quand le clavier s'ouvre
+      backgroundColor: Colors.white,
+      elevation: 8,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              // S'adapte automatiquement à la hauteur du clavier virtuel
+              padding: EdgeInsets.only(
+                top: 24.0,
+                left: 24.0,
+                right: 24.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
               ),
-              const SizedBox(height: 20),
+              child: Container(
+                constraints: const BoxConstraints(
+                  maxWidth: 450,
+                ), // Idéal pour garder un beau visuel sur tablette
 
-              // --- INSTRUCTION ---
-              Text(
-                "Choisissez un montant rapide ou saisissez-le au clavier :",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- PETITE BARRE DE SÉPARATION (INDICATEUR VISUEL) ---
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        margin: EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    // --- EN-TÊTE ---
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            icon,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Text(
+                          "Montant $label",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // --- INSTRUCTION ---
+                    Text(
+                      "Choisissez un montant rapide ou saisissez-le :",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // --- GRILLE DES PRIX RAPIDES ---
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 2.2,
+                      children: [0, 50, 100, 150, 175, 200, 300, 400, 500].map((
+                        amount,
+                      ) {
+                        final isSelected = currentPrice == amount;
+                        return InkWell(
+                          onTap: () {
+                            setModalState(() {
+                              currentPrice = amount;
+                              textController.text = amount > 0
+                                  ? amount.toString()
+                                  : "";
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.orange.withOpacity(0.1)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.orange
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (isSelected) ...[
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Colors.orange,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  amount == 0 ? "Aucun" : "$amount F",
+                                  style: TextStyle(
+                                    color: isSelected
+                                        ? Colors.orange[800]
+                                        : Colors.black87,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // --- CHAMP DE SAISIE LIBRE ---
+                    TextField(
+                      controller: textController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setModalState(() {
+                          currentPrice =
+                              int.tryParse(value) ??
+                              -1; // Désélectionne les boutons grisés
+                        });
+                      },
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: "Autre montant (F CFA)",
+                        labelStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                        floatingLabelStyle: const TextStyle(
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Colors.orange,
+                            width: 2,
+                          ),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.money_rounded,
+                          color: Colors.orange,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // --- BOUTONS D'ACTION PIED DE PAGE ---
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              side: BorderSide(color: Colors.grey.shade300),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              onPriceChanged(0);
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              "Effacer",
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              int enteredPrice =
+                                  int.tryParse(textController.text) ?? 0;
+                              onPriceChanged(enteredPrice);
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              "Valider",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // --- GRILLE DES PRIX RAPIDES ---
-              StatefulBuilder(
-                builder: (context, setModalState) {
-                  return Column(
-                    children: [
-                      GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: 2.6,
-                        children: [0, 200, 300, 500].map((amount) {
-                          final isSelected = currentPrice == amount;
-                          return InkWell(
-                            onTap: () {
-                              setModalState(() {
-                                currentPrice = amount;
-                                textController.text = amount > 0
-                                    ? amount.toString()
-                                    : "";
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? Colors.orange.withOpacity(0.1)
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: BoxBorder.all(
-                                  color: isSelected
-                                      ? Colors.orange
-                                      : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (isSelected) ...[
-                                    const Icon(
-                                      Icons.check_circle_rounded,
-                                      color: Colors.orange,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 6),
-                                  ],
-                                  Text(
-                                    amount == 0 ? "Sans Alloco" : "$amount F",
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? Colors.orange[800]
-                                          : Colors.black87,
-                                      fontWeight: isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // --- CHAMP DE SAISIE LIBRE ---
-                      TextField(
-                        controller: textController,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          setModalState(() {
-                            currentPrice =
-                                int.tryParse(value) ??
-                                -1; // Désélectionne les boutons si saisie manuelle libre
-                          });
-                        },
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        decoration: InputDecoration(
-                          labelText: "Autre montant (F CFA)",
-                          labelStyle: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                          floatingLabelStyle: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: const BorderSide(
-                              color: Colors.orange,
-                              width: 2,
-                            ),
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.money_rounded,
-                            color: Colors.orange,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              // --- BOUTONS D'ACTION PIED DE PAGE ---
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        onPriceChanged(0);
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        "Effacer",
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        int enteredPrice =
-                            int.tryParse(textController.text) ?? 0;
-                        onPriceChanged(enteredPrice);
-                        Navigator.pop(context);
-                      },
-                      child: const Text(
-                        "Valider",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }

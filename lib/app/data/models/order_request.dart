@@ -10,8 +10,10 @@ class OrderRequest {
   int fishPrice;
   int extraOeufs;
   int extraAllocoPrice;
+  int extraTomatePrice;
+  int extraMayonnaisePrice;
+  int extraBissapPrice;
   int extraEau;
-  bool pimentAPart;
   String notes;
   String serviceType;
   final String status;
@@ -28,8 +30,10 @@ class OrderRequest {
     this.fishPrice = 300,
     this.extraOeufs = 0,
     this.extraAllocoPrice = 0,
+    this.extraTomatePrice = 0,
+    this.extraMayonnaisePrice = 0,
+    this.extraBissapPrice = 0,
     this.extraEau = 0,
-    this.pimentAPart = false,
     this.notes = '',
     this.serviceType = 'emporter',
     this.status = 'en_attente',
@@ -50,11 +54,10 @@ class OrderRequest {
       fishPrice: json['fish_price'] ?? 0,
       extraOeufs: json['extra_oeufs'] ?? 0,
       extraAllocoPrice: json['extra_alloco_price'] ?? 0,
+      extraTomatePrice: json['extra_tomate_price'] ?? 0,
+      extraMayonnaisePrice: json['extra_mayonnaise_price'] ?? 0,
+      extraBissapPrice: json['extra_bissap_price'] ?? 0,
       extraEau: json['extra_eau'] ?? 0,
-      pimentAPart:
-          json['piment_a_part'] == 1 ||
-          json['piment_a_part'] ==
-              true, // Gère le booléen ou le tinyInt 0/1 de MySQL
       notes: json['notes'] ?? '',
       serviceType: json['service_type'] ?? 'emporter',
       status: json['status'] ?? 'en_attente',
@@ -68,6 +71,9 @@ class OrderRequest {
     int total = attiekePrice + fishPrice;
     total += extraOeufs * 150;
     total += extraAllocoPrice;
+    total += extraTomatePrice;
+    total += extraMayonnaisePrice;
+    total += extraBissapPrice;
     total += extraEau * 25;
     return total;
   }
@@ -80,8 +86,10 @@ class OrderRequest {
     'fish_price': fishPrice,
     'extra_oeufs': extraOeufs,
     'extra_alloco_price': extraAllocoPrice,
+    'extra_tomate_price': extraTomatePrice,
+    'extra_mayonnaise_price': extraMayonnaisePrice,
+    'extra_bissap_price': extraBissapPrice,
     'extra_eau': extraEau,
-    'piment_a_part': pimentAPart,
     'notes': notes,
     'total_price': totalPrice,
     'service_type': serviceType,
@@ -110,5 +118,47 @@ class OrderRequest {
       final month = createdAt!.month.toString().padLeft(2, '0');
       return "$day/$month à $hour:$minute";
     }
+  }
+
+  OrderRequest copyWith({
+    int? id,
+    String? ticketNumber,
+    DateTime? createdAt,
+    String? basePlat,
+    int? attiekePrice,
+    int? fishCount,
+    int? fishPrice,
+    int? extraOeufs,
+    int? extraAllocoPrice,
+    int? extraTomatePrice,
+    int? extraMayonnaisePrice,
+    int? extraBissapPrice,
+    int? extraEau,
+    String? notes,
+    String? serviceType,
+    String? status,
+    String? statusLabel,
+    Color? statusColor,
+  }) {
+    return OrderRequest(
+      id: id ?? this.id,
+      ticketNumber: ticketNumber ?? this.ticketNumber,
+      createdAt: createdAt ?? this.createdAt,
+      basePlat: basePlat ?? this.basePlat,
+      attiekePrice: attiekePrice ?? this.attiekePrice,
+      fishCount: fishCount ?? this.fishCount,
+      fishPrice: fishPrice ?? this.fishPrice,
+      extraOeufs: extraOeufs ?? this.extraOeufs,
+      extraAllocoPrice: extraAllocoPrice ?? this.extraAllocoPrice,
+      extraTomatePrice: extraTomatePrice ?? this.extraTomatePrice,
+      extraMayonnaisePrice: extraMayonnaisePrice ?? this.extraMayonnaisePrice,
+      extraBissapPrice: extraBissapPrice ?? this.extraBissapPrice,
+      extraEau: extraEau ?? this.extraEau,
+      notes: notes ?? this.notes,
+      serviceType: serviceType ?? this.serviceType,
+      status: status ?? this.status,
+      statusLabel: statusLabel ?? this.statusLabel,
+      statusColor: statusColor ?? this.statusColor,
+    );
   }
 }

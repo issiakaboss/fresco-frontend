@@ -5,7 +5,7 @@ import 'package:laravel_echo_null/laravel_echo_null.dart';
 
 class EchoService {
   static Future<Echo<pusher.PusherClient, PusherChannel>> initEcho() async {
-    String? token =  Token.getToken();
+    String? token = Token.getToken();
     return Echo.pusher(
       Env.appKey,
       authEndPoint: '${Env.apiUrl}broadcasting/auth',
@@ -17,6 +17,8 @@ class EchoService {
       wsPort: Env.wsPort,
       wssPort: Env.wssPort,
       encrypted: Env.encrypted,
+      activityTimeout: 30000, 
+      pongTimeout: 15000,
       enableLogging: true,
       autoConnect: true,
       nameSpace: null,
@@ -24,11 +26,12 @@ class EchoService {
   }
 
   // Subscribe to Channel & Event
-  static void listen(
-      {required Echo<pusher.PusherClient, PusherChannel> echo,
-      required String channel,
-      required String event,
-      required Function action}) {
+  static void listen({
+    required Echo<pusher.PusherClient, PusherChannel> echo,
+    required String channel,
+    required String event,
+    required Function action,
+  }) {
     Channel? myChannel;
     if (!echo.connector.channels.containsKey(channel)) {
       myChannel = echo.channel(channel);

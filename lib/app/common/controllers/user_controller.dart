@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../data/models/token.dart';
 import 'package:fresco_shop/app/common/controllers/socket_controller.dart';
-import 'package:fresco_shop/app/data/providers/api_provider.dart';
 import 'package:fresco_shop/app/data/providers/auth_provider.dart';
 import 'package:fresco_shop/app/routes/app_pages.dart';
 import '../../data/models/user.dart';
@@ -35,10 +34,10 @@ class UserController extends GetxController {
       if (user != null) {
         Get.find<SocketController>().connectToSocket(user: user);
         debugPrint("🔌 Socket connecté automatiquement pour ${user.name}");
-      }
-    });
-  }
-
+      } 
+    }); 
+  }     
+        
   Future<void> loadUser() async {
     try {
       final token = Token.getToken();
@@ -46,21 +45,7 @@ class UserController extends GetxController {
 
       if (hasUser && token != null && token.isNotEmpty) {
         final localUser = await _userRepo.getUser();
-        try {
-          final response = await ApiProvider.get(
-            apiURL: 'users/me',
-            auth: true,
-          );
-          if (response != null && response['data'] != null) {
-            final userObject = User.fromJson(response['data']);
-            await affectToCurrentUser(userObject);
-            return;
-          }
-        } catch (e) {
-          debugPrint(
-            "Impossible de rafraîchir l'utilisateur via l'API, utilisation du mode local.",
-          );
-        }
+        
         if (localUser != null) {
           userRx.value = localUser;
         }
