@@ -1,23 +1,16 @@
+import 'package:fresco_shop/app/routes/app_pages.dart';
 import 'package:get/get.dart';
+import 'package:fresco_shop/app/common/controllers/user_controller.dart';
 
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
-
-  final count = 0.obs;
   @override
-  void onInit() {
-    super.onInit();
-  }
-
-  @override
-  void onReady() {
+  void onReady() async {
     super.onReady();
+    await UserController.to.loadUser();
+    if (UserController.to.isLoggedIn) {
+      UserController.to.redirectUserBasedOnRole();
+    } else {
+      Get.offAllNamed(Routes.LOGIN);
+    }
   }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void increment() => count.value++;
 }

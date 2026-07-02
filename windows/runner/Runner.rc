@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.frescoShop" "\0"
+            VALUE "CompanyName", "com.frescoshop" "\0"
             VALUE "FileDescription", "fresco_shop" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "fresco_shop" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.frescoShop. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.frescoshop. All rights reserved." "\0"
             VALUE "OriginalFilename", "fresco_shop.exe" "\0"
             VALUE "ProductName", "fresco_shop" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

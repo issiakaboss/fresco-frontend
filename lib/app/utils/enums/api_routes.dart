@@ -1,7 +1,14 @@
 enum ApiRoutes {
-  login('users/login'),
-  register('users/register'),
-  logout('users/logout'),
+  login('login'),
+  register('register'),
+  logout('logout'),
+  orders('orders'),
+  cashierOrders('cashier/orders'),
+  distributionHistory('orders/distribution-history'),
+  forDistribution('orders/ready-for-distribution'),
+  distributeOrder('orders/{order}/distribute'),
+  updateOrder('orders/{order}'),
+  cancelOrder('orders/{order}/cancel'),
   updateUser('users/{user}');
 
   final String path;

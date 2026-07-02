@@ -1,5 +1,4 @@
-
-import 'package:fresco_shop/app/cummon/controllers/base_controller.dart';
+import 'package:fresco_shop/app/common/controllers/base_controller.dart';
 import 'package:fresco_shop/app/data/models/token.dart';
 import 'package:fresco_shop/app/data/models/user.dart';
 import 'package:fresco_shop/app/data/providers/api_provider.dart';
@@ -20,7 +19,7 @@ class AuthProvider with BaseController {
       ).catchError(handleError);
       if (response != null) {
         Token.saveToken(response['data']['token']);
-        User user = User.fromJson(response['data']);
+        User user = User.fromJson(response['data']['user']);
         await Get.find<UserRepository>().saveUser(user);
         return user;
       }
@@ -30,8 +29,10 @@ class AuthProvider with BaseController {
     }
   }
 
-  Future<User?> updateUser(
-      {required String userId, required Map<String, dynamic> data}) async {
+  Future<User?> updateUser({
+    required String userId,
+    required Map<String, dynamic> data,
+  }) async {
     try {
       final response = await ApiProvider.put(
         auth: true,
@@ -57,7 +58,7 @@ class AuthProvider with BaseController {
         data: user.toJson(),
       ).catchError(handleError);
       if (response != null) {
-         Token.saveToken(response['data']['token']);
+        Token.saveToken(response['data']['token']);
         User newUser = User.fromJson(response['data']);
         await Get.find<UserRepository>().saveUser(newUser);
         return newUser;
@@ -76,11 +77,6 @@ class AuthProvider with BaseController {
         apiURL: ApiRoutes.logout.path,
         data: {},
       ).catchError(handleError);
-    } catch (e) {
-   }
+    } catch (e) {}
   }
-
- 
-
-  
 }

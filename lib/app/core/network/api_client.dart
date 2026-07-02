@@ -1,17 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:fresco_shop/app/config/env.dart';
-import 'package:fresco_shop/app/cummon/controllers/socket_controller.dart';
-import 'package:fresco_shop/app/cummon/controllers/user_controller.dart';
+import 'package:fresco_shop/app/common/controllers/socket_controller.dart';
+import 'package:fresco_shop/app/common/controllers/user_controller.dart';
 import 'package:fresco_shop/app/data/models/token.dart';
 import 'package:fresco_shop/app/data/repositories/user_repository.dart';
+import 'package:fresco_shop/app/routes/app_pages.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'api_exception.dart';
 
 class ApiClient {
-  static String baseUrl = Env.apiUrl;
-
   // Headers with or without authentication
   static Map<String, String> headers({bool auth = false}) {
     String? lang = Get.locale?.languageCode;
@@ -19,7 +17,7 @@ class ApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'accept-language': lang ?? 'fr',
-  };
+    };
 
     if (auth) {
       String? token = Token.getToken();
@@ -37,7 +35,8 @@ class ApiClient {
       return jsonDecode(utf8.decode(response.bodyBytes));
     } on FormatException {
       debugPrint(
-          '[API] Invalid JSON (status ${response.statusCode}): ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
+        '[API] Invalid JSON (status ${response.statusCode}): ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}',
+      );
       return null;
     }
   }
@@ -66,11 +65,18 @@ class ApiClient {
       case 401:
         _handleUnauthorized();
         throw ApiException(
-            'Session expirée, veuillez vous reconnecter', null, null, status);
+          'Session expirée, veuillez vous reconnecter',
+          null,
+          null,
+          status,
+        );
 
       case 503:
         final body = _decodeBody(response);
-        final String message = _extractMessage(body, 'Service temporairement indisponible');
+        final String message = _extractMessage(
+          body,
+          'Service temporairement indisponible',
+        );
         throw ServiceUnavailableException(message);
 
       case 500:
@@ -78,8 +84,12 @@ class ApiClient {
 
       default:
         final body = _decodeBody(response);
-        throw ApiException(_extractMessage(body, 'Erreur serveur ($status)'),
-            null, null, status);
+        throw ApiException(
+          _extractMessage(body, 'Erreur serveur ($status)'),
+          null,
+          null,
+          status,
+        );
     }
   }
 
@@ -88,13 +98,13 @@ class ApiClient {
     if (Get.isRegistered<UserController>()) {
       UserController.to.userRx.value = null;
     }
-  
+
     if (Get.isRegistered<SocketController>()) {
       SocketController socketController = Get.find<SocketController>();
       if (socketController.echo != null) {
         try {
-          var channels =
-              socketController.echo!.connector.channels.values.toList();
+          var channels = socketController.echo!.connector.channels.values
+              .toList();
           for (var chanel in channels) {
             socketController.echo!.connector.leaveChannel(chanel.name);
           }
@@ -103,6 +113,6 @@ class ApiClient {
         socketController.echo = null;
       }
     }
-    // Get.offAllNamed(AppPages.LOGIN);
+    Get.offAllNamed(Routes.LOGIN);
   }
 }
