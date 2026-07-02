@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fresco_shop/app/modules/cuisine/views/kds_ticket_card.dart';
 import 'package:fresco_shop/app/modules/cuisine/views/kds_ticket_card_compact.dart';
 import 'package:fresco_shop/app/routes/app_pages.dart';
+import 'package:fresco_shop/app/utils/components/notification_toggle_item.dart';
 import 'package:fresco_shop/app/utils/helpers/dialog_helper.dart';
 import 'package:get/get.dart';
 import '../controllers/cuisine_controller.dart';
@@ -149,7 +150,7 @@ class CuisineView extends GetView<CuisineController> {
               onSelected: (value) {
                 switch (value) {
                   case 'history':
-                    Get.toNamed(Routes.CUISIN_HISTORY);
+                    // Get.toNamed(Routes.CUISIN_HISTORY);
                     break;
                   case 'auto_next':
                     controller.toggleAutoNext();
@@ -212,6 +213,10 @@ class CuisineView extends GetView<CuisineController> {
                   }),
                 ),
 
+                const PopupMenuItem<String>(
+                  enabled: false,
+                  child: NotificationToggleItem(),
+                ),
                 const PopupMenuDivider(
                   height: 1,
                 ), // Ligne de séparation élégante

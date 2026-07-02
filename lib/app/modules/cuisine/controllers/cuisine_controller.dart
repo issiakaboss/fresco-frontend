@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fresco_shop/app/utils/helpers/storage_helper.dart';
 import 'package:get/get.dart';
 import '../../../data/models/order_request.dart'; // Ajuste le chemin selon ton projet
 import '../../../data/providers/order_provider.dart';
@@ -16,11 +17,13 @@ class CuisineController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    isAutoNextEnabled.value = StorageHelper.getAutoNextStatus();
     fetchCuisineOrders();
   }
 
-  void toggleAutoNext() {
+  void toggleAutoNext() async{
     isAutoNextEnabled.value = !isAutoNextEnabled.value;
+    await StorageHelper.saveAutoNextStatus(isAutoNextEnabled.value);
     if (isAutoNextEnabled.value && ordersEnCours.isEmpty) {
       _checkAndTriggerAutoNext();
     }
@@ -114,6 +117,7 @@ class CuisineController extends GetxController {
       ordersEnCours.add(order);
       _sortOrders(ordersEnCours);
     }
+    _checkAndTriggerAutoNext();
   }
 
   void removeOrderFromScreen(int orderId) {

@@ -31,4 +31,26 @@ class StorageHelper {
   static String? getLanguage() {
     return _storage.read(_languageKey);
   }
+
+  // 🔔 Gestion des Alertes Sonores (Réutilisable : Cuisine & Distribution)
+  static const String _soundAlertKey = 'sound_alerts_enabled';
+
+  static Future<void> saveSoundAlertStatus(bool isEnabled) async {
+    await _storage.write(_soundAlertKey, isEnabled);
+  }
+
+  static bool getSoundAlertStatus() {
+    return _storage.read<bool>(_soundAlertKey) ?? true; 
+  }
+
+  // 🍳 Gestion de l'Auto-Next (Spécifique Cuisine)
+  static const String _autoNextKey = 'cuisine_auto_next_enabled';
+
+  static Future<void> saveAutoNextStatus(bool isEnabled) async {
+    await _storage.write(_autoNextKey, isEnabled);
+  }
+
+  static bool getAutoNextStatus() {
+    return _storage.read<bool>(_autoNextKey) ?? false; 
+  }
 }

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:fresco_shop/app/data/models/order_request.dart';
 import 'package:fresco_shop/app/routes/app_pages.dart';
+import 'package:fresco_shop/app/utils/components/notification_toggle_item.dart';
 import 'package:fresco_shop/app/utils/helpers/dialog_helper.dart';
 import 'package:get/get.dart';
 import '../controllers/distribution_controller.dart';
@@ -103,6 +104,11 @@ class DistributionView extends GetView<DistributionController> {
                     ),
                   ],
                 ),
+              ),
+              const PopupMenuDivider(height: 1),
+              const PopupMenuItem<String>(
+                enabled: false,
+                child: NotificationToggleItem(),
               ),
               const PopupMenuDivider(height: 1),
               const PopupMenuItem<String>(
